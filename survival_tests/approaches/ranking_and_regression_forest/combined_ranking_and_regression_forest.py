@@ -2,6 +2,7 @@ import copy
 import logging
 import math
 import random
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -14,14 +15,24 @@ logger = logging.getLogger("run")
 
 
 class CombinedRankingAndRegressionForest:
-    def __init__(self, amount_of_trees, tree: BinaryDecisionTree, consensus, feature_percentage=1) -> None:
-        self.trees = [copy.deepcopy(tree) for _ in range(amount_of_trees)]
+    def __init__(self, all_trained_with_one_error, amount_of_trees, tree: BinaryDecisionTree, consensus, feature_percentage=1) -> None:
+        if all_trained_with_one_error:
+            self.trees: List[BinaryDecisionTree] = [copy.deepcopy(tree) for _ in range(amount_of_trees)]
+        else:
+            self.trees: List[BinaryDecisionTree] = []
+            for _ in range(amount_of_trees):
+                self.trees.append(copy.deepcopy(random.choice(tree)))
+        self.all_trained_with_one_error = all_trained_with_one_error
         self.consensus = consensus
         self.feature_percentage = feature_percentage
         self.amount_of_features = 0
 
     def get_name(self):
-        return f"CombinedForest with {len(self.trees)} trees, {self.consensus.__name__} as consensus, {self.feature_percentage} of features"
+        if self.all_trained_with_one_error:
+            return f"CombinedForest with {len(self.trees)} trees, {self.consensus.__name__} as consensus, {self.feature_percentage} of features"
+        else:
+            string_of_ranking_errors = set([x.ranking_loss.__name__ for x in self.trees])
+            return f"CombinedForest with {len(self.trees)} trees, {self.consensus.__name__} as consensus, {self.feature_percentage} of features, trained with different errors {string_of_ranking_errors}"
 
     def fit(self, train_scenario: ASlibScenario, fold, amount_of_training_instances, depth=0, do_preprocessing=True):
         self.amount_of_features = math.ceil(len(train_scenario.features) * self.feature_percentage)

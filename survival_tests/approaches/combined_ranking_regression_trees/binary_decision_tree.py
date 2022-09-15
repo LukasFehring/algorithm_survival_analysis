@@ -182,9 +182,6 @@ class BinaryDecisionTree:
             smaller_scenario.feature_data = train_scenario.feature_data[smaller_instances]
             smaller_scenario.performance_data = train_scenario.performance_data[smaller_instances]
 
-            smaller_performance_instances = performance_data[smaller_instances]
-            smaller_ranking_instances = rankings[smaller_instances]
-
             bigger_scenario = deepcopy(train_scenario)
             bigger_scenario.feature_data = train_scenario.feature_data[bigger_instances]
             bigger_scenario.performance_data = train_scenario.performance_data[bigger_instances]
